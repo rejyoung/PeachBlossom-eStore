@@ -107,7 +107,7 @@
     text-transform: uppercase;
 }
 
-.date-pickers-cont .MuiInputBase-root.MuiOutlinedInput-root {
+.date-pickers-cont .MuiPickersInputBase-root.MuiPickersOutlinedInput-root {
     background-color: var(--peach-blossom);
     height: 40px;
     width: 140px;
@@ -294,7 +294,7 @@
         justify-content: flex-start;
     }
 
-    .date-pickers-cont .MuiFormControl-root.MuiTextField-root {
+    .date-pickers-cont .MuiFormControl-root.MuiPickersTextField-root {
         padding-top: 1px;
         margin-right: 20px;
     }

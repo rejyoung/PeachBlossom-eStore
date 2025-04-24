@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import React, { ReactNode, SetStateAction } from "react";
+import React, { JSX, ReactNode, SetStateAction } from "react";
 
 import {
     AOVParams,
