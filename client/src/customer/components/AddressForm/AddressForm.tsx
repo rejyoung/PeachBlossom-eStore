@@ -1,6 +1,6 @@
 import React, { SetStateAction, useEffect, useState } from "react";
 import FormLabel from "@mui/material/FormLabel";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import { styled } from "@mui/system";
 import { MuiTelInput } from "mui-tel-input";

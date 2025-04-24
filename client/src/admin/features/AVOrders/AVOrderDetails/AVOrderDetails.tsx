@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Grid2 as Grid, Container } from "@mui/material";
+import { Grid, Container } from "@mui/material";
 import "./av-order-details.css";
 import { useSearchParams } from "react-router-dom";
 import StatusPopup from "../../../../common/components/StatusPopup";

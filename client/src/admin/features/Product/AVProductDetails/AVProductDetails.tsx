@@ -5,7 +5,7 @@ import React, {
     SetStateAction,
     useContext,
 } from "react";
-import { Grid2 as Grid, Container, TextField, Button } from "@mui/material";
+import { Grid, Container, TextField, Button } from "@mui/material";
 
 import axios from "axios";
 import "./av-product-details.css";

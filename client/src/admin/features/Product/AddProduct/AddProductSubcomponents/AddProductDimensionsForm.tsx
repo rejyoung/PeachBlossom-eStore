@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect } from "react";
 import { FormField } from "../../../../../common/components/Fields/FormField";
 import { adminFormInputStyle } from "../../../../constants/formInputStyles";
-import { Grid2 as Grid, InputAdornment } from "@mui/material";
+import { Grid, InputAdornment } from "@mui/material";
 
 interface AddProductDimensionsFormProps {}
 const AddProductDimensionsForm: React.FC<

@@ -6,7 +6,7 @@ import {
     OrderStatus,
     orderStatusOptions,
 } from "../../avOrdersTypes";
-import { Button, Grid2 as Grid } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../../../common/contexts/authContext";
 import { useNavigationContext } from "../../../../../common/contexts/navContext";

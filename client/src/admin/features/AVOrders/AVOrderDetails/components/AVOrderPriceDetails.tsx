@@ -1,4 +1,4 @@
-import { Grid2 as Grid, InputAdornment, TextField } from "@mui/material";
+import { Grid, InputAdornment, TextField } from "@mui/material";
 import React, { SetStateAction } from "react";
 import {
     adminFormInputStyle,

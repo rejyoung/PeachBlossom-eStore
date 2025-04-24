@@ -1,4 +1,4 @@
-import { Box, Button, Grid2 as Grid, Typography } from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import React from "react";
 import { useEffect } from "react";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
