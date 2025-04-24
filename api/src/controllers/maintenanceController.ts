@@ -5,7 +5,7 @@ export const orderSeeder = async (req: Request, res: Response) => {
     try {
         await maintenanceService.orderSeeder();
 
-        res.status(200);
+        res.status(200).json({ success: true });
     } catch (error) {
         let errorObj = {
             message: "order seeder failure",
