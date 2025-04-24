@@ -1,4 +1,4 @@
-import { Grid2 as Grid, InputAdornment } from "@mui/material";
+import { Grid, InputAdornment } from "@mui/material";
 import React, { SetStateAction } from "react";
 import { FormField } from "../../../../../common/components/Fields/FormField";
 import { SelectField } from "../../../../../common/components/Fields/SelectField";

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { JSX, useState } from "react";
 import { useEffect } from "react";
 import { Period, TopParams } from "../../analyticsTypes";
 import { useWindowSizeContext } from "../../../../../common/contexts/windowSizeContext";
