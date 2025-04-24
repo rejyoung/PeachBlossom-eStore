@@ -72,7 +72,7 @@ export const categoriesSchema = z.object({
 // Filters (Sanitization, not required checks)
 export const filterSchema = z.object({
     search: sanitizeStringSchema("search string", 150).optional(),
-    sort: sanitizeStringSchema("sort"),
+    sort: sanitizeStringSchema("sort").optional(),
     tags: z.array(sanitizeStringSchema("tag", 20)).optional(),
 });
 
