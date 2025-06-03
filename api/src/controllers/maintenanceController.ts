@@ -3,7 +3,9 @@ import { Request, Response } from "express";
 
 export const orderSeeder = async (req: Request, res: Response) => {
     try {
-        await maintenanceService.orderSeeder();
+        const { startDate } = req.body;
+
+        await maintenanceService.orderSeeder(startDate);
 
         res.status(200).json({ success: true });
     } catch (error) {

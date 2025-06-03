@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import "./add-product.css";
-import { Grid2 as Grid, Container, Button } from "@mui/material";
+import { Grid, Container, Button } from "@mui/material";
 import { Formik, Form, FormikHelpers } from "formik";
 import { FormField } from "../../../../common/components/Fields/FormField";
 import axios from "axios";

@@ -7,7 +7,7 @@ export const sanitize =
         try {
             // Validate request input and update `req`
             const validatedData = schema.parse(req[location]);
-            req[location] = validatedData;
+            Object.assign(req[location], validatedData);
             next();
         } catch (err) {
             if (err instanceof ZodError) {

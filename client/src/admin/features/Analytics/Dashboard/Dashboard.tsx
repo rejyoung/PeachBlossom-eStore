@@ -8,7 +8,12 @@ import "../sales-analytics.css";
 import { BarData } from "../analyticsTypes";
 import BarChartSharpIcon from "@mui/icons-material/BarChartSharp";
 import ShowChartSharpIcon from "@mui/icons-material/ShowChartSharp";
-import { IconButton, SvgIcon, Typography } from "@mui/material";
+import {
+    CircularProgress,
+    IconButton,
+    SvgIcon,
+    Typography,
+} from "@mui/material";
 import CustomLineChart from "../components/CustomCharts/CustomLineChart";
 import CustomBarChart from "../components/CustomCharts/CustomBarChart";
 
@@ -17,7 +22,8 @@ import TopProducts from "../Product Performance/TopProducts";
 const Dashboard: React.FC = () => {
     const dispatch = useAppDispatch();
     const analytics = useAppSelector((state: RootState) => state.analytics);
-    const rotData = analytics.revenueOverTime.rotData;
+    const rot = analytics.revenueOverTime;
+    const rotData = rot.rotData;
     const salesSummary = analytics.salesSummary;
 
     const [rotChartType, setRotChartType] = useState<"bar" | "line">("line");
@@ -29,8 +35,18 @@ const Dashboard: React.FC = () => {
         | null
     >(null);
 
+    const [rotLoading, setRotLoading] = useState<boolean>(true);
+
     const startDate = new Date();
     startDate.setFullYear(startDate.getFullYear() - 1);
+
+    useEffect(() => {
+        if (rot.loading) {
+            setRotLoading(true);
+        } else {
+            setRotLoading(false);
+        }
+    }, [rot.loading]);
 
     useEffect(() => {
         const endDate = new Date();
@@ -108,44 +124,53 @@ const Dashboard: React.FC = () => {
                         </div>
                     </div>
                     <div className="dashboard-revenue-chart">
-                        {lastYearRevenue && rotChartType === "line" && (
-                            <CustomLineChart
-                                data={lastYearRevenue}
-                                xLegend="Month"
-                                yLegend="Revenue"
-                                idLegend={false}
-                                enableSlices="x"
-                                margin={{
-                                    top: 10,
-                                    right: 60,
-                                    bottom: 80,
-                                    left: 100,
-                                }}
-                                yAxisFormat={(value: number) =>
-                                    `$${value.toLocaleString("en-US")}`
-                                }
-                                yFormat=">-$,.2f"
-                            />
+                        {rotLoading && (
+                            <div className="chart-loading">
+                                <CircularProgress />
+                            </div>
                         )}
-                        {rotData.length > 0 && rotChartType === "bar" && (
-                            <CustomBarChart
-                                data={rotData as BarData[]}
-                                stacked={false}
-                                includeLegend={false}
-                                tiltLabels={true}
-                                valueFormat=">-$,.2r"
-                                margin={{
-                                    top: 0,
-                                    right: 60,
-                                    bottom: 120,
-                                    left: 100,
-                                }}
-                                yAxisFormat={(value: number) =>
-                                    `$${value.toLocaleString("en-US")}`
-                                }
-                                enableLabel={false}
-                            />
-                        )}
+                        {!rotLoading &&
+                            lastYearRevenue &&
+                            rotChartType === "line" && (
+                                <CustomLineChart
+                                    data={lastYearRevenue}
+                                    xLegend="Month"
+                                    yLegend="Revenue"
+                                    idLegend={false}
+                                    enableSlices="x"
+                                    margin={{
+                                        top: 10,
+                                        right: 60,
+                                        bottom: 80,
+                                        left: 100,
+                                    }}
+                                    yAxisFormat={(value: number) =>
+                                        `$${value.toLocaleString("en-US")}`
+                                    }
+                                    yFormat=">-$,.2f"
+                                />
+                            )}
+                        {!rotLoading &&
+                            rotData.length > 0 &&
+                            rotChartType === "bar" && (
+                                <CustomBarChart
+                                    data={rotData as BarData[]}
+                                    stacked={false}
+                                    includeLegend={false}
+                                    tiltLabels={true}
+                                    valueFormat=">-$,.2r"
+                                    margin={{
+                                        top: 0,
+                                        right: 60,
+                                        bottom: 120,
+                                        left: 100,
+                                    }}
+                                    yAxisFormat={(value: number) =>
+                                        `$${value.toLocaleString("en-US")}`
+                                    }
+                                    enableLabel={false}
+                                />
+                            )}
                     </div>
                 </div>
                 <div className="sales-summary analytics-box">
