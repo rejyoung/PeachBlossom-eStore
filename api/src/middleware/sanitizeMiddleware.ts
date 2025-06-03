@@ -12,10 +12,11 @@ export const sanitize =
         } catch (err) {
             if (err instanceof ZodError) {
                 console.error(err.errors);
-                return res.status(400).json({
+                res.status(400).json({
                     message: "Validation failed",
                     errors: err.errors,
                 });
+                return;
             }
             next(err);
         }
