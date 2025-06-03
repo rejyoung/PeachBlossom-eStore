@@ -104,3 +104,15 @@ export const quantitySchema = z
         quantity: z.number(),
     })
     .passthrough();
+
+export const dateStringSchema = z
+    .string()
+    .trim()
+    .refine(
+        (val) => {
+            const ms = Date.parse(val);
+            return !isNaN(ms);
+        },
+        { message: "Invalid date format" }
+    )
+    .transform((val) => new Date(val));
