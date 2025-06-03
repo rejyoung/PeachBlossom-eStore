@@ -54,7 +54,13 @@ app.use(logger("dev"));
 app.use(cookieParser());
 
 // sanitize requests for mongoDB
-app.use(mongoSanitize());
+const sanitize = mongoSanitize.sanitize;
+app.use((req, _res, next) => {
+    if (req.body) sanitize(req.body);
+    if (req.params) sanitize(req.params);
+    if (req.query) sanitize(req.query); // Explicitly tells mongoSanitize to mutate in place instead of replacing req.query, which is getter only in new express version.
+    next();
+});
 
 app.get("/set-test-cookie", (req, res) => {
     res.cookie("test", "value", {
