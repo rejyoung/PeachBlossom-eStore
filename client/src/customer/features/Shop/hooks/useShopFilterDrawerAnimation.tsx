@@ -10,7 +10,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
 interface ShopFilterDrawerAnimationProps {
-    shopRef: React.RefObject<HTMLElement>;
+    shopRef: React.RefObject<HTMLDivElement | null>;
     setFilterDrawerOpen: React.Dispatch<SetStateAction<boolean>>;
     filterDrawerOpen: boolean;
     itemsPerPage: number;

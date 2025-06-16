@@ -7,7 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(useGSAP);
 
 interface MobileLogoAnimationProps {
-    headerRef: React.RefObject<HTMLElement>;
+    headerRef: React.RefObject<HTMLElement | null>;
 }
 
 interface MobileLogoAnimation {

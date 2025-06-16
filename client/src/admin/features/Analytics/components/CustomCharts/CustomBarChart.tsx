@@ -167,9 +167,12 @@ const CustomBarChart: React.FC<Props> = ({
                     data={dataArray[currentIdx].data}
                     keys={sortedKeys}
                     theme={nivoTheme}
-                    maxValue={
-                        stacked ? stackedMaxValue || "auto" : maxValue || "auto"
-                    }
+                    valueScale={{
+                        type: "linear",
+                        max: stacked
+                            ? stackedMaxValue || "auto"
+                            : maxValue || "auto",
+                    }}
                     margin={
                         margin || { top: 50, right: 150, bottom: 80, left: 100 }
                     }

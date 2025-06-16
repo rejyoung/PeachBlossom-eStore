@@ -37,7 +37,7 @@ const CategoryEditor = <T extends AVCategory | Subcategory>({
     selectedCategory,
     selectedSubcategory,
     deleteTooltip,
-}: CategoryEditorProps<T>): JSX.Element => {
+}: CategoryEditorProps<T>): React.JSX.Element => {
     //Typeguard
     const isAVCategory = (
         option: AVCategory | Subcategory

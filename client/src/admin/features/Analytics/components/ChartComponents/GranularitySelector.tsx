@@ -33,7 +33,7 @@ const GranularitySelector = <
     paramsObj,
     setParams,
     granularityOptions,
-}: Props<T, G>): JSX.Element => {
+}: Props<T, G>): React.JSX.Element => {
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
 
     const { width } = useWindowSizeContext();

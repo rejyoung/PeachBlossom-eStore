@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import React, { JSX, ReactNode, SetStateAction } from "react";
+import React, { JSX, ReactNode, SetStateAction, useEffect } from "react";
 
 import {
     AOVParams,
@@ -62,7 +62,7 @@ const ChartFrame = <
     setStacked,
     granularityOptions,
     children,
-}: ChartFrameProps<T, G>): JSX.Element => {
+}: ChartFrameProps<T, G>): React.JSX.Element => {
     return (
         <div className={`${className} analytics-box`}>
             <div className="box-header">

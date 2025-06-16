@@ -51,7 +51,7 @@ export const SelectFieldNonFormik = <T=string>({
     variant,
     someOptionsDisabled = false,
     optionsToStayEnabled,
-}: SelectFieldProps<T>): JSX.Element => {
+}: SelectFieldProps<T>): React.JSX.Element => {
     return (
         <Box>
             <Select

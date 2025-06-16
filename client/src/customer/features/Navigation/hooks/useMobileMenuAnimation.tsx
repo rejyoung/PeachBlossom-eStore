@@ -15,7 +15,7 @@ gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(useGSAP);
 
 interface MobileMenuAnimationProps {
-    headerRef: React.RefObject<HTMLElement>;
+    headerRef: React.RefObject<HTMLElement | null>;
     categories: Category[];
     menusExpandedLength: number;
     setForceCollapse: React.Dispatch<SetStateAction<boolean>>;

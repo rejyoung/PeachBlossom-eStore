@@ -11,7 +11,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(useGSAP);
 
 interface DesktopMenuAnimationsProps {
-    headerRef: React.RefObject<HTMLElement>;
+    headerRef: React.RefObject<HTMLElement | null>;
 }
 
 interface DesktopMenuAnimations {

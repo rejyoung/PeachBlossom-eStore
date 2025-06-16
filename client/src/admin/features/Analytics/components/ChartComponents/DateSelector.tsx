@@ -29,7 +29,7 @@ const DateSelector = <
 >({
     paramsObj,
     setParams,
-}: Props<T>): JSX.Element => {
+}: Props<T>): React.JSX.Element => {
     const [pickDates, setPickDates] = useState<boolean>(false);
     const { width } = useWindowSizeContext();
     const [isNarrow, setIsNarrow] = useState<boolean>(true);

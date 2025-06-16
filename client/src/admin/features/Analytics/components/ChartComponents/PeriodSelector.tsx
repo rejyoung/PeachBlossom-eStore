@@ -18,7 +18,7 @@ const PeriodSelector = <T extends TopParams>({
     paramsObj,
     setParams,
     periodOptions,
-}: Props<T>): JSX.Element => {
+}: Props<T>): React.JSX.Element => {
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
 
     const { width } = useWindowSizeContext();

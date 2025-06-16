@@ -4,7 +4,6 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { Icon } from "@mui/material";
-import { CSSProperties } from "@mui/material/styles/createTypography";
 import SearchField from "../../../../../common/components/Fields/SearchField";
 import { SelectFieldNonFormik } from "../../../../../common/components/Fields/SelectFieldNonFormik";
 import FilterAltSharpIcon from "@mui/icons-material/FilterAltSharp";
@@ -114,7 +113,7 @@ const regions: RegionMap = {
 };
 
 interface CustomStyles {
-    [key: string]: CSSProperties | CustomStyles;
+    [key: string]: React.CSSProperties | CustomStyles;
 }
 interface Props {
     updateSearchParams: (newFilters: Record<string, string>) => void;

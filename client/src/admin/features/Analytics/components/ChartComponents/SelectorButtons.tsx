@@ -31,7 +31,7 @@ const SelectorButtons = <
     options,
     selectedOption,
     handleClick,
-}: SelectorButtonsProps<T>): JSX.Element => {
+}: SelectorButtonsProps<T>): React.JSX.Element => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const selectedRef = useRef<HTMLDivElement | null>(null);
 

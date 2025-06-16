@@ -1,5 +1,4 @@
 import React, { SetStateAction } from "react";
-import { useEffect } from "react";
 import ShowChartSharpIcon from "@mui/icons-material/ShowChartSharp";
 import { IconButton, SvgIcon } from "@mui/material";
 import BarChartSharpIcon from "@mui/icons-material/BarChartSharp";
@@ -41,7 +40,7 @@ const ChartSelectionButtons = <
     allowedTypes,
     stacked = false,
     setStacked,
-}: ChartSelectionButtonsProps<T>): JSX.Element => {
+}: ChartSelectionButtonsProps<T>): React.JSX.Element => {
     return (
         <div className="chart-selection-btns">
             {allowedTypes.includes("line") && (
@@ -67,11 +66,17 @@ const ChartSelectionButtons = <
                 <React.Fragment>
                     <IconButton
                         onClick={() => {
-                            setLoading(true);
-                            setParams({
-                                ...params,
-                                chartType: "bar",
-                            });
+                            if (params.chartType !== "bar") {
+                                setParams({
+                                    ...params,
+                                    chartType: "bar",
+                                });
+                                setLoading(true);
+                            }
+
+                            if (setStacked) {
+                                setStacked(false);
+                            }
                         }}
                     >
                         <SvgIcon
@@ -87,6 +92,13 @@ const ChartSelectionButtons = <
                     {setStacked && (
                         <IconButton
                             onClick={() => {
+                                if (params.chartType !== "bar") {
+                                    setParams({
+                                        ...params,
+                                        chartType: "bar",
+                                    });
+                                    setLoading(true);
+                                }
                                 setStacked(true);
                             }}
                         >
