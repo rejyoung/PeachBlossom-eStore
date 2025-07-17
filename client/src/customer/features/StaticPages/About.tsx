@@ -39,11 +39,10 @@ const About: React.FC<Props> = () => {
             </p>
             <p>
                 That said, there are elements that are not currently functional,
-                such as the customer accounts button, the recent-views feature,
-                and customer management tabs in the admin panel. This is by
-                design, as I plan to return to this project over time to add
-                these features and explore the possibilities and mechanics of
-                customer activity tracking.
+                such as the settings and customer overview tabs in the admin
+                panel. This is by design, as I plan to return to this project
+                over time to add these features and explore the possibilities
+                and mechanics of customer activity tracking.
             </p>
             <p>
                 For questions about this site or to contact me regarding
