@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodSchema, ZodError } from "zod";
+import { ZodType, ZodError } from "zod/v4";
 
 export const sanitize =
-    (schema: ZodSchema, location: "body" | "query" | "params" = "query") =>
+    (schema: ZodType, location: "body" | "query" | "params" = "query") =>
     (req: Request, res: Response, next: NextFunction) => {
         try {
             // Validate request input and update `req`
@@ -11,10 +11,10 @@ export const sanitize =
             next();
         } catch (err) {
             if (err instanceof ZodError) {
-                console.error(err.errors);
+                console.error(err.issues);
                 res.status(400).json({
                     message: "Validation failed",
-                    errors: err.errors,
+                    errors: err.issues,
                 });
                 return;
             }

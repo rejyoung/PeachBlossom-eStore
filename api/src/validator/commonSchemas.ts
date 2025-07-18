@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 // Function that returns a decimal schema with a dynamic parameter name
 export const createDecimalSchema = (paramName: string) =>
     z
         .string()
-        .regex(/^\d+(\.\d{1,2})?$/, { message: `Invalid ${paramName} format` })
+        .regex(/^\d+(\.\d{1,2})?$/, { error: `Invalid ${paramName} format` })
         .optional();
 
 // Function to escape HTML characters
@@ -37,26 +37,25 @@ export const sanitizeStringSchema = (
 
 export const sanitizeEmailSchema = () =>
     z
-        .string()
-        .trim()
         .email()
+        .trim()
         .min(5, `email cannot be empty`)
         .max(320, `email is too long`)
         .transform((val) => escapeHTML(val));
 
 export const productNoSchema = z.string().regex(/^[A-Za-z]{2}-[A-Za-z0-9]+$/, {
-    message: "Invalid product number format",
+    error: "Invalid product number format",
 });
 
 // Pagination (Sanitization, not required checks)
 export const paginationSchema = z.object({
     page: z
         .string()
-        .regex(/^\d+$/, { message: "Page must be a number" })
+        .regex(/^\d+$/, { error: "Page must be a number" })
         .default("1"),
     itemsPerPage: z
-        .string({ message: "Items per page is required" })
-        .regex(/^\d+$/, { message: "Items per page must be a number" }),
+        .string({ error: "Items per page is required" })
+        .regex(/^\d+$/, { error: "Items per page must be a number" }),
 });
 
 export const categoriesSchema = z.object({
@@ -99,11 +98,9 @@ export const shippingDetailsSchema = z.object({
     city: sanitizeStringSchema("city", 60),
 });
 
-export const quantitySchema = z
-    .object({
-        quantity: z.number(),
-    })
-    .passthrough();
+export const quantitySchema = z.looseObject({
+    quantity: z.number(),
+});
 
 export const dateStringSchema = z
     .string()
@@ -113,6 +110,6 @@ export const dateStringSchema = z
             const ms = Date.parse(val);
             return !isNaN(ms);
         },
-        { message: "Invalid date format" }
+        { error: "Invalid date format" }
     )
     .transform((val) => new Date(val));

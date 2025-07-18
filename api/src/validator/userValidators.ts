@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import {
     sanitizeStringSchema,
     shippingDetailsSchema,
@@ -7,28 +7,24 @@ import {
 export const getUsersSchema = z.object({
     page: z
         .string()
-        .regex(/^\d+$/, { message: "Page must be a number" })
+        .regex(/^\d+$/, { error: "Page must be a number" })
         .default("1"),
     usersPerPage: z
-        .string({ message: "Users per page is required" })
-        .regex(/^\d+$/, { message: "Items per page must be a number" }),
+        .string({ error: "Users per page is required" })
+        .regex(/^\d+$/, { error: "Items per page must be a number" }),
 
     accessLevel: sanitizeStringSchema("access level").optional(),
     searchString: sanitizeStringSchema("search string", 150).optional(),
 });
 
-export const changeUsernameSchema = z
-    .object({
-        newUsername: sanitizeStringSchema("new username"),
-    })
-    .passthrough();
+export const changeUsernameSchema = z.looseObject({
+    newUsername: sanitizeStringSchema("new username"),
+});
 
-export const changeDisplayNameSchema = z
-    .object({
-        newFirstName: sanitizeStringSchema("first name"),
-        newLastName: sanitizeStringSchema("last name"),
-    })
-    .passthrough();
+export const changeDisplayNameSchema = z.looseObject({
+    newFirstName: sanitizeStringSchema("first name"),
+    newLastName: sanitizeStringSchema("last name"),
+});
 
 export const changeLevelSchema = z.object({
     username: sanitizeStringSchema("username"),

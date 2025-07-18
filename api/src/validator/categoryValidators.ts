@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { sanitizeStringSchema } from "./commonSchemas.js";
 
 export const categoryNameSchema = z
@@ -12,7 +12,7 @@ export const categoryNameSchema = z
         ).optional(),
     })
     .refine((data) => (data.name ? !data.categoryName : !!data.categoryName), {
-        message: "Provide either 'categoryName' or 'name', not both",
+        error: "Provide either 'categoryName' or 'name', not both",
     });
 
 export const subcategoryNameSchema = z.object({

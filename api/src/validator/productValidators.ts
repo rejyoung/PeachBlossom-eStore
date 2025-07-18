@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import {
     categoriesSchema,
     createDecimalSchema,
@@ -61,7 +61,7 @@ export const createProductSchema = z.object({
     description: sanitizeStringSchema("description", 5000),
     price: z.preprocess(
         (val) => Number(val),
-        z.number({ message: "Price must be a number" })
+        z.number({ error: "Price must be a number" })
     ),
     attributes: z.preprocess(
         (value) => (typeof value === "string" ? JSON.parse(value) : value),
@@ -70,7 +70,7 @@ export const createProductSchema = z.object({
     stock: z
         .preprocess(
             (val) => Number(val),
-            z.number({ message: "Stock must be a number" })
+            z.number({ error: "Stock must be a number" })
         )
         .optional(),
     tags: sanitizeStringSchema("tag", 20).optional(),
@@ -81,7 +81,7 @@ export const updateProductSchema = z.object({
     existingImageUrls: z
         .preprocess(
             (value) => (Array.isArray(value) ? value : [value]),
-            z.array(z.string({ message: "Invalid url format" }).url())
+            z.array(z.string({ error: "Invalid url format" }).url())
         )
         .optional(),
     productNo: productNoSchema,
