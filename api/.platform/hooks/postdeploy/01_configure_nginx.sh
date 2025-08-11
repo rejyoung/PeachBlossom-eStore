@@ -86,16 +86,17 @@ server {
 EOF
 
 # Reload nginx so ACME endpoint is live
-nginx -t && service nginx reload
+nginx -t && systemctl reload nginx
 
 # Install certbot
-if ! rpm -q epel-release >/dev/null 2>&1; then
-  echo "Installing EPEL"
+if command -v dnf >/dev/null 2>&1; then
+  echo "Amazon Linux 2023 detected; installing certbot via dnf"
+  dnf install -y certbot
+else
+  echo "Amazon Linux 2 detected; enabling EPEL and installing certbot"
   amazon-linux-extras install epel -y
+  yum install -y certbot
 fi
-
-echo "Installing certbot"
-yum install -y certbot
 
 #  Obtain/renew certificate via webroot
 if [ ! -e "${LE_LIVE_DIR}/fullchain.pem" ]; then
@@ -156,7 +157,7 @@ EOF
 echo "Created https.conf"
 
 # Test & reload with HTTPS now that certs exist
-nginx -t && service nginx reload
+nginx -t && systemctl reload nginx
 
 # Ensure renewals reload nginx automatically
 mkdir -p /etc/letsencrypt/renewal-hooks/deploy
