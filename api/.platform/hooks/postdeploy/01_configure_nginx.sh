@@ -2,68 +2,20 @@
 
 # Log the start of the script
 exec > >(tee /var/log/eb-hooks.log | logger -t user-data -s 2>/dev/console) 2>&1
-echo "Starting Nginx configuration"
+set -euo pipefail
 
-# Clean up old Nginx configurations
+echo "Starting Nginx + Certbot configuration"
+
+# ----- SETTINGS -----
+DOMAIN="${DOMAIN:?Set DOMAIN env var in EB}"
+EMAIL="${LE_EMAIL:?Set LE_EMAIL env var in EB}"          
+WEBROOT="/var/www/html"
+LE_LIVE_DIR="/etc/letsencrypt/live/${DOMAIN}"
+
+# Clean up Nginx confs
 echo "Cleaning up old Nginx configurations"
-sudo rm -f /etc/nginx/conf.d/*.conf
-sudo rm -f /etc/nginx/sites-enabled/default
-echo "Cleaned up old Nginx configurations"
-
-# Create https.conf
-echo "Creating https.conf"
-cat << 'EOF' > /etc/nginx/conf.d/https.conf
-server {
-    listen 443 ssl;
-    server_name api.pb.ryanyoung.codes;
-
-    ssl_certificate      /etc/pki/tls/certs/server.crt;
-    ssl_certificate_key  /etc/pki/tls/certs/server.key;
-
-    ssl_session_timeout  5m;
-    ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
-    ssl_prefer_server_ciphers   on;
-
-    access_log /var/log/nginx/healthd/application.log healthd;
-    access_log /var/log/nginx/access.log main;
-
-    client_max_body_size 20M;
-
-    location / {
-        proxy_pass  http://nodejs;
-        proxy_set_header   Connection "";
-        proxy_http_version 1.1;
-        proxy_set_header        Host            $host;
-        proxy_set_header        X-Real-IP       $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto https;
-    }
-}
-EOF
-echo "Created https.conf"
-
-# Retrieve SSL Certificate from SSM Parameter Store
-echo "Retrieving SSL certificate from SSM Parameter Store"
-aws ssm get-parameter --name "/PeachBlossom/ssl/certificate" --with-decryption --output text --query Parameter.Value > /etc/pki/tls/certs/server.crt
-if [ $? -ne 0 ]; then
-    echo "Failed to retrieve SSL certificate."
-    exit 1
-fi
-echo "Retrieved SSL certificate"
-
-# Retrieve Private Key from SSM Parameter Store
-echo "Retrieving private key from SSM Parameter Store"
-aws ssm get-parameter --name "/PeachBlossom/ssl/privatekey" --with-decryption --output text --query Parameter.Value > /etc/pki/tls/certs/server.key
-if [ $? -ne 0 ]; then
-    echo "Failed to retrieve private key."
-    exit 1
-fi
-echo "Retrieved private key"
-
-# Set permissions on the certificate and key
-chmod 600 /etc/pki/tls/certs/server.crt
-chmod 600 /etc/pki/tls/certs/server.key
-
+rm -f /etc/nginx/conf.d/*.conf || true
+rm -f /etc/nginx/sites-enabled/default || true
 
 # Create nginx.conf
 echo "Creating nginx.conf"
@@ -92,13 +44,13 @@ http {
     sendfile            on;
     keepalive_timeout   65;
 
-    client_max_body_size 20M; 
+    client_max_body_size 20M;
 
     include             /etc/nginx/conf.d/*.conf;
 }
 EOF
-echo "Created nginx.conf"
 
+echo "Created nginx.conf"
 
 # Create upstream.conf
 echo "Creating upstream.conf"
@@ -107,10 +59,115 @@ upstream nodejs {
     server 127.0.0.1:8080;  # Adjust the IP address and port as needed
 }
 EOF
+
 echo "Created upstream.conf"
 
-# Create logrotate configuration for Nginx
-echo "Creating logrotate configuration"
+# Ensure webroot exists for ACME HTTP-01
+mkdir -p "${WEBROOT}/.well-known/acme-challenge"
+
+# Create temporary :80 server for ACME
+echo "Creating 00_http_acme.conf"
+cat << EOF > /etc/nginx/conf.d/00_http_acme.conf
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    # Health endpoint for EB
+    location = /health { return 200 'OK'; add_header Content-Type text/plain; }
+
+    # Expose ACME challenge path over HTTP
+    location ^~ /.well-known/acme-challenge/ {
+        root ${WEBROOT};
+        default_type "text/plain";
+    }
+
+    # NOTE: No redirect yet; certbot must be able to hit the path above via HTTP
+}
+EOF
+
+# Reload nginx so ACME endpoint is live
+nginx -t && service nginx reload
+
+# Install certbot
+if ! rpm -q epel-release >/dev/null 2>&1; then
+  echo "Installing EPEL"
+  amazon-linux-extras install epel -y
+fi
+
+echo "Installing certbot"
+yum install -y certbot
+
+#  Obtain/renew certificate via webroot
+if [ ! -e "${LE_LIVE_DIR}/fullchain.pem" ]; then
+  echo "Requesting new Let’s Encrypt certificate for ${DOMAIN}"
+  certbot certonly --agree-tos -n --email "${EMAIL}" \
+    --webroot -w "${WEBROOT}" -d "${DOMAIN}"
+else
+  echo "Renewing certificate if due"
+  certbot renew -n || true
+fi
+
+# Create https.conf
+echo "Creating https.conf"
+cat << EOF > /etc/nginx/conf.d/https.conf
+server {
+    listen 443 ssl http2;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+
+    ssl_session_timeout  10m;
+    ssl_protocols  TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers   on;
+
+    access_log /var/log/nginx/healthd/application.log healthd;
+    access_log /var/log/nginx/access.log main;
+
+    client_max_body_size 20M;
+
+    location / {
+        proxy_pass  http://nodejs;
+        proxy_set_header   Connection "";
+        proxy_http_version 1.1;
+        proxy_set_header        Host            $host;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto https;
+    }
+}
+
+# HTTP server: keep ACME path, redirect everything else to HTTPS
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location = /health { return 200 'OK'; add_header Content-Type text/plain; }
+
+    location ^~ /.well-known/acme-challenge/ {
+        root ${WEBROOT};
+        default_type "text/plain";
+    }
+
+    return 301 https://$host$request_uri;
+}
+EOF
+
+echo "Created https.conf"
+
+# Test & reload with HTTPS now that certs exist
+nginx -t && service nginx reload
+
+# Ensure renewals reload nginx automatically
+mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+cat >/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh <<'SH'
+#!/usr/bin/env bash
+/usr/bin/systemctl reload nginx || /sbin/service nginx reload || true
+SH
+chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+
+# Set up logrotate
+echo "Setting up logrotate for Nginx (if not present)"
 cat << 'EOF' > /etc/logrotate.d/nginx
 /var/log/nginx/*.log {
     daily
@@ -126,16 +183,5 @@ cat << 'EOF' > /etc/logrotate.d/nginx
     endscript
 }
 EOF
-echo "Created logrotate configuration"
 
-# Restart nginx and log the status
-echo "Restarting nginx..." >> /var/log/eb-hooks.log
-if service nginx restart >> /var/log/eb-hooks.log 2>&1; then
-    echo "Nginx restarted successfully." >> /var/log/eb-hooks.log
-else
-    echo "Failed to restart Nginx." >> /var/log/eb-hooks.log
-    exit 1
-fi
-
-# Log the end of the script
-echo "Nginx configuration script completed" >> /var/log/eb-hooks.log
+echo "Nginx + Certbot configuration complete"
