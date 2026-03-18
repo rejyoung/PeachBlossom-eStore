@@ -23,6 +23,9 @@ import analyticsRouter from "./routes/analyticsRoutes.js";
 import activityRouter from "./routes/activityRoutes.js";
 import maintenanceRouter from "./routes/maintenanceRoutes.js";
 
+// Parse query strings like `color[]=red&color[]=blue` into arrays.
+app.set("query parser", "extended");
+
 //Cors settings
 const allowedOrigins: string[] = [
     "https://pb.ryanyoung.codes",
@@ -47,6 +50,10 @@ app.use(cors(corsOptions));
 // Read incoming requests properly
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+// Parse query strings like `color[]=red&color[]=blue` into arrays.
+app.set("query parser", "extended");
+
 // logs requests to the server
 app.use(logger("dev"));
 
