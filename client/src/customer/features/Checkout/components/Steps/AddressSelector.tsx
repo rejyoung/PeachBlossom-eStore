@@ -74,6 +74,16 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
                         className="new-address"
                         onClick={() => {
                             setAllAddressFieldsValid(false);
+                            setShippingDetails({
+                                shippingAddress: "",
+                                shippingAddress2: "",
+                                firstName: "",
+                                lastName: "",
+                                zipCode: "",
+                                phoneNumber: "",
+                                stateAbbr: "",
+                                city: "",
+                            });
                             setAddNew(true);
                         }}
                     >
