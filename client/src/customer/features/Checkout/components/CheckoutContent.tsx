@@ -65,6 +65,7 @@ const CheckoutContent: React.FC<CheckoutContentProps> = ({
                     addressList={userAddresses}
                     setShippingDetails={setShippingDetails}
                     setAddNew={setAddNew}
+                    setAllAddressFieldsValid={setAllAddressFieldsValid}
                 />
             ) : (
                 <AddressForm

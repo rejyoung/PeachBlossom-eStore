@@ -5,7 +5,7 @@ import {
     CustomerAddress,
 } from "../../../../store/userData/UserDataTypes";
 import CustomerAddressBox from "../../../../components/CustomerAddressBox/CustomerAddressBox";
-import { FormControl, Icon, RadioGroup } from "@mui/material";
+import { FormControl, RadioGroup } from "@mui/material";
 import AddCircleOutlineSharpIcon from "@mui/icons-material/AddCircleOutlineSharp";
 import "./address-selector.css";
 
@@ -13,20 +13,22 @@ interface AddressSelectorProps {
     addressList: CustomerAddress[];
     setShippingDetails: React.Dispatch<React.SetStateAction<ShippingDetails>>;
     setAddNew: React.Dispatch<React.SetStateAction<boolean>>;
+    setAllAddressFieldsValid: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const AddressSelector: React.FC<AddressSelectorProps> = ({
     addressList,
     setShippingDetails,
     setAddNew,
+    setAllAddressFieldsValid,
 }) => {
     const [selectedAddress, setSelectedAddress] = useState<number>(
-        addressList[0].address_id
+        addressList[0].address_id,
     );
 
     useEffect(() => {
         const address: any = {
             ...addressList.filter(
-                (address) => address.address_id === selectedAddress
+                (address) => address.address_id === selectedAddress,
             )[0],
         };
         address.shippingAddress = address.shippingAddress1;
@@ -37,7 +39,13 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
             address.shippingAddress2 = "";
         }
         setShippingDetails(address);
-    }, [selectedAddress]);
+        setAllAddressFieldsValid(true);
+    }, [
+        addressList,
+        selectedAddress,
+        setAllAddressFieldsValid,
+        setShippingDetails,
+    ]);
 
     return (
         <div className="address-selector">
@@ -46,7 +54,7 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
                     value={selectedAddress}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setSelectedAddress(
-                            Number((e.target as HTMLInputElement).value)
+                            Number((e.target as HTMLInputElement).value),
                         )
                     }
                     sx={{
@@ -64,7 +72,10 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
                     ))}
                     <div
                         className="new-address"
-                        onClick={() => setAddNew(true)}
+                        onClick={() => {
+                            setAllAddressFieldsValid(false);
+                            setAddNew(true);
+                        }}
                     >
                         <AddCircleOutlineSharpIcon />
                         <h2>Add a new delivery address</h2>
