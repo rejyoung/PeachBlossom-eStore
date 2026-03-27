@@ -52,10 +52,10 @@ export const holdStock = async (cartId: number) => {
         //If cart.dataValues.checkoutExpiration is null, it will give the Unix epoch and not cause errors. This is fine, because these variables are used only if cart.dataValues.checkoutExpiration is not null (see below).
 
         const expirationMinusGracePeriod = new Date(
-            cart.dataValues.checkoutExpiration
+            cart.dataValues.checkoutExpiration,
         );
         expirationMinusGracePeriod.setSeconds(
-            expirationMinusGracePeriod.getSeconds() - 30
+            expirationMinusGracePeriod.getSeconds() - 30,
         );
         const currentTime = new Date();
 
@@ -77,7 +77,7 @@ export const holdStock = async (cartId: number) => {
             const utcExpirationDate = expirationDate.toISOString();
             await sqlCart.update(
                 { checkoutExpiration: utcExpirationDate },
-                { where: { cart_id: cartId }, transaction: sqlTransaction }
+                { where: { cart_id: cartId }, transaction: sqlTransaction },
             );
         } else {
             const cartTime = new Date(cart.dataValues.checkoutExpiration);
@@ -118,7 +118,7 @@ export const holdStock = async (cartId: number) => {
         }
 
         const productMap = new Map(
-            products.map((product) => [product.productNo, product])
+            products.map((product) => [product.productNo, product]),
         );
         const productIds = products.map((product) => product.id);
 
@@ -139,27 +139,27 @@ export const holdStock = async (cartId: number) => {
         }
 
         const inventoryMap = new Map(
-            inventories.map((inv) => [inv.product_id, inv])
+            inventories.map((inv) => [inv.product_id, inv]),
         );
 
         for (const item of unreservedCartItems) {
             const product = productMap.get(item.productNo);
             if (!product) {
                 throw new Error(
-                    `Product not found for productNo: ${item.productNo}`
+                    `Product not found for productNo: ${item.productNo}`,
                 );
             }
 
             const inventory = inventoryMap.get(product.id);
             if (!inventory) {
                 throw new Error(
-                    `Inventory record not found for product_id: ${product.id}`
+                    `Inventory record not found for product_id: ${product.id}`,
                 );
             }
 
             console.log(
                 "available:",
-                Number(inventory.getDataValue("available"))
+                Number(inventory.getDataValue("available")),
             );
             // Check if the available stock is sufficient
             const available = Number(inventory.getDataValue("available"));
@@ -169,12 +169,12 @@ export const holdStock = async (cartId: number) => {
                 const newReserved = inventory.reserved + quantityNeeded;
                 await inventory.update(
                     { reserved: newReserved },
-                    { transaction: sqlTransaction }
+                    { transaction: sqlTransaction },
                 );
                 // Mark the cart item as reserved
                 await item.update(
                     { reserved: true },
-                    { transaction: sqlTransaction }
+                    { transaction: sqlTransaction },
                 );
             } else if (available === 0) {
                 // Remove item from cart if no longer available
@@ -185,7 +185,7 @@ export const holdStock = async (cartId: number) => {
                 });
                 if (count === 0) {
                     throw new Error(
-                        `An error occurred when deleting productNo ${product.productNo} from cart due to unavailability`
+                        `An error occurred when deleting productNo ${product.productNo} from cart due to unavailability`,
                     );
                 }
                 cartChangesMade = true;
@@ -196,13 +196,13 @@ export const holdStock = async (cartId: number) => {
                         reserved: true,
                         quantity: available,
                     },
-                    { transaction: sqlTransaction }
+                    { transaction: sqlTransaction },
                 );
                 // Update the reserved amount in the inventory
                 const newReserved = inventory.reserved + available;
                 await inventory.update(
                     { reserved: newReserved },
-                    { transaction: sqlTransaction }
+                    { transaction: sqlTransaction },
                 );
                 cartChangesMade = true;
             }
@@ -225,7 +225,7 @@ export const holdStock = async (cartId: number) => {
 export const adjustHoldQuantity = async (
     productNo: string,
     cartId: number,
-    adjustment: number
+    adjustment: number,
 ) => {
     const sqlTransaction = await sequelize.transaction();
     try {
@@ -234,52 +234,56 @@ export const adjustHoldQuantity = async (
         if (!cart) {
             throw new Error("Cart id invalid.");
         }
-        const expiration = new Date(cart.checkoutExpiration);
-        const now = new Date();
-        if (now.getTime() >= expiration.getTime()) {
-            throw new Error(
-                "Cannot adjust hold quantity. Cart checkout is expired"
-            );
-        }
 
-        console.log("Fetching product record");
-        const product = await sqlProduct.findOne({
-            where: { productNo: productNo },
-        });
+        if (cart.checkoutExpiration) {
+            const expiration = new Date(cart.checkoutExpiration);
+            const now = new Date();
+            if (now.getTime() >= expiration.getTime()) {
+                throw new Error(
+                    "Cannot adjust hold quantity. Cart checkout is expired",
+                );
+            }
 
-        if (!product) {
-            throw new Error("Error fetching product record");
-        }
+            console.log("Fetching product record");
+            const product = await sqlProduct.findOne({
+                where: { productNo: productNo },
+            });
 
-        console.log("Fetching inventory record");
-        const inventoryRecord = await sqlInventory.findOne({
-            where: { product_id: product.id },
-            transaction: sqlTransaction,
-            lock: sqlTransaction.LOCK.UPDATE,
-        });
-        if (!inventoryRecord) {
-            throw new Error("Unable to retrieve inventory record.");
-        }
-        if (adjustment > inventoryRecord.stock - inventoryRecord.reserved) {
-            return false;
-        }
+            if (!product) {
+                throw new Error("Error fetching product record");
+            }
 
-        console.log("Adjusting reserved stock quantity");
-        if (adjustment > 0) {
-            await inventoryRecord.increment("reserved", {
-                by: adjustment,
+            console.log("Fetching inventory record");
+            const inventoryRecord = await sqlInventory.findOne({
                 where: { product_id: product.id },
                 transaction: sqlTransaction,
+                lock: sqlTransaction.LOCK.UPDATE,
             });
-        } else {
-            await inventoryRecord.decrement("reserved", {
-                by: Math.abs(adjustment),
-                where: { product_id: product.id },
-                transaction: sqlTransaction,
-            });
-        }
+            if (!inventoryRecord) {
+                throw new Error("Unable to retrieve inventory record.");
+            }
+            if (adjustment > inventoryRecord.stock - inventoryRecord.reserved) {
+                await sqlTransaction.rollback();
+                return false;
+            }
 
-        console.log("Success. Committing changes.");
+            console.log("Adjusting reserved stock quantity");
+            if (adjustment > 0) {
+                await inventoryRecord.increment("reserved", {
+                    by: adjustment,
+                    where: { product_id: product.id },
+                    transaction: sqlTransaction,
+                });
+            } else {
+                await inventoryRecord.decrement("reserved", {
+                    by: Math.abs(adjustment),
+                    where: { product_id: product.id },
+                    transaction: sqlTransaction,
+                });
+            }
+
+            console.log("Success. Committing changes.");
+        }
         await sqlTransaction.commit();
 
         return true;
@@ -304,11 +308,11 @@ export const extendHold = async (cartId: number) => {
         //If cart.dataValues.checkoutExpiration is null, it will give the Unix epoch and not cause errors. This is fine, because these variables are used only if cart.dataValues.checkoutExpiration is not null (see below).
 
         const recordedExpirationMinus60Sec = new Date(
-            cart.dataValues.checkoutExpiration
+            cart.dataValues.checkoutExpiration,
         );
         const recordedExpiration = new Date(cart.dataValues.checkoutExpiration);
         recordedExpirationMinus60Sec.setSeconds(
-            recordedExpirationMinus60Sec.getSeconds() - 60
+            recordedExpirationMinus60Sec.getSeconds() - 60,
         );
 
         const currentTime = new Date();
@@ -330,7 +334,7 @@ export const extendHold = async (cartId: number) => {
             const utcExpirationDate = expirationDate.toISOString();
             await cart.update(
                 { checkoutExpiration: utcExpirationDate },
-                { transaction: sqlTransaction }
+                { transaction: sqlTransaction },
             );
         } else {
             expirationTime = recordedExpiration.toISOString();
@@ -346,7 +350,7 @@ export const extendHold = async (cartId: number) => {
 
 export const updateStockLevels = async (
     updateData: Record<string, number>,
-    filters: AdminProductFilters
+    filters: AdminProductFilters,
 ) => {
     const sqlTransaction = await sequelize.transaction();
 
@@ -371,7 +375,7 @@ export const updateStockLevels = async (
 
         for (const record of inventoryRecords) {
             const newStockAmount = Number(
-                updateData[record.dataValues.Product.dataValues.productNo]
+                updateData[record.dataValues.Product.dataValues.productNo],
             );
 
             if (newStockAmount !== undefined) {
@@ -380,7 +384,7 @@ export const updateStockLevels = async (
                     {
                         where: { inventory_id: record.dataValues.inventory_id },
                         transaction: sqlTransaction,
-                    }
+                    },
                 );
             }
         }
